@@ -30,20 +30,14 @@ class ConfigManager:
             self.config["rag"]["embeddings_cache"].lstrip("./")
         )
         
-        self.config["backend"]["model_path"] = os.path.join(
-            self.project_root, 
-            self.config["backend"]["model_path"].lstrip("./")
-        )
     
     def _process_env_vars(self) -> None:
         """Process environment variables."""
-        if self.config["backend"]["model_type"] == "chatgpt":
-            # Override API key from environment if available
-            openai_api_key = os.getenv("OPENAI_API_KEY")
-            if openai_api_key:
-                self.config["backend"]["openai"]["api_key"] = openai_api_key
-            else:
-                print("Warning: OPENAI_API_KEY not found in environment variables")
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if openai_api_key:
+            self.config["backend"]["openai"]["api_key"] = openai_api_key
+        else:
+            print("Warning: OPENAI_API_KEY not found in environment variables")
     
     def get_config(self) -> Dict[str, Any]:
         """Get the processed configuration."""

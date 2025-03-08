@@ -40,45 +40,51 @@ class RAGSystem:
         
         print(f"Loaded {len(self.chunks)} chunks")
 
-    def _process_file(self, file_path: str) -> List[str]:
-        """Process a single file into structural chunks (functions/classes)."""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+    def _process_file(self, file_path):
+        """Process a single file and break it into chunks.
         
-        chunks = []
+        Args:
+            file_path: Path to the file to process
+            
+        Returns:
+            List of text chunks from the file
+        """
+        # Skip non-text files or files that are too large
+        if not self._is_text_file(file_path):
+            return []
+        
         try:
-            # Parse Python file
-            tree = ast.parse(content)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
             
-            # Get imports section
-            imports = []
-            for node in ast.iter_child_nodes(tree):
-                if isinstance(node, (ast.Import, ast.ImportFrom)):
-                    import_lines = content.splitlines()[node.lineno-1:node.end_lineno]
-                    imports.extend(import_lines)
+            # Skip empty or very small files
+            if len(content) < 50:
+                return []
             
-            imports_text = "\n".join(imports)
+            # Add file path as metadata
+            content = f"FILE: {file_path}\n\n{content}"
             
-            # Process each function and class
-            for node in ast.iter_child_nodes(tree):
-                if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):
-                    # Get the source lines for this definition
-                    func_lines = content.splitlines()[node.lineno-1:node.end_lineno]
-                    func_text = "\n".join(func_lines)
-                    
-                    # Include imports with each function for context
-                    chunk_text = f"File: {file_path}\n\n# Imports\n{imports_text}\n\n# Definition\n{func_text}"
-                    chunks.append(chunk_text)
+            # Break content into chunks
+            chunks = []
+            current_chunk = ""
             
-            # If no functions/classes found, use the current chunking method
-            if not chunks:
-                return self._process_file(file_path)
+            for line in content.split('\n'):
+                if len(current_chunk) + len(line) + 1 <= self.chunk_size:
+                    current_chunk += line + '\n'
+                else:
+                    if current_chunk:
+                        chunks.append(current_chunk)
+                    current_chunk = line + '\n'
+            
+            # Add the last chunk if it's not empty
+            if current_chunk:
+                chunks.append(current_chunk)
             
             return chunks
         
-        except SyntaxError:
-            # Fall back to the original method if the file has syntax errors
-            return self._process_file(file_path)
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+            return []
 
     def _process_directories(self) -> List[str]:
         """Process all files in the given directories."""
@@ -128,3 +134,31 @@ class RAGSystem:
         top_indices = np.argsort(similarities)[-top_k:][::-1]
                 
         return [self.chunks[i] for i in top_indices]
+
+    def _is_text_file(self, file_path: str) -> bool:
+        """Check if a file is a Python file that can be processed.
+        
+        Args:
+            file_path: Path to the file to check
+            
+        Returns:
+            True if the file is a valid Python file, False otherwise
+        """
+        # Check if it's a Python file
+        if not file_path.endswith('.py'):
+            return False
+        
+        # Check file size (skip files larger than 1MB)
+        try:
+            if os.path.getsize(file_path) > 1024 * 1024:
+                print(f"Skipping large file: {file_path}")
+                return False
+            
+            # Just check if it's readable
+            with open(file_path, 'r', encoding='utf-8') as f:
+                f.read(10)  # Just test if readable
+            return True
+        
+        except Exception as e:
+            print(f"Skipping inaccessible file: {file_path} ({str(e)})")
+            return False

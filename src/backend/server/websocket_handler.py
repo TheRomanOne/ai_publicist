@@ -81,7 +81,7 @@ class ApiHandler:
                         None, 
                         lambda: self.chat_model.generate_response(message, context, self.resume)
                     ),
-                    timeout=60
+                    timeout=120
                 )
             except asyncio.TimeoutError:
                 log_error(f"Response generation timed out for session {session_id}")

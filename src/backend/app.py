@@ -54,7 +54,7 @@ chat_model = ChatModelChatGPT(
 # Set up API routes
 api_handler = setup_api_routes(app, rag_system, chat_model)
 
-def cleanup_on_exit(signum, frame):
+def cleanup_on_exit():
     """Cleanup function to run when the server is shutting down."""
     print("\nCleaning up before exit...")
     for port in [config["backend"]["port"], config["frontend"]["port"]]:

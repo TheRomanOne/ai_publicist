@@ -4,8 +4,8 @@ from rag_system import RAGSystem
 
 # Get the directory containing this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# Get the project root directory (one level up from backend)
-PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+# Get the project root directory (TWO levels up from backend, not one)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 def init_rag():
     # Load configuration
