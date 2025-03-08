@@ -1,0 +1,25 @@
+{
+  "backend": {
+    "host": "localhost",
+    "port": 5000,
+    "model_type": "chatgpt",
+    "model_path": "./models/phi2",
+    "openai": {
+      "api_key": "your-api-key-here",
+      "model": "gpt-3.5-turbo"
+    },
+    "chunk_size": 1500,
+    "max_context_chunks": 3
+  },
+  "frontend": {
+    "host": "localhost",
+    "port": 3000,
+    "ui_version": "3d"
+  },
+  "rag": {
+    "code_directories": [
+      "/home/roman/Desktop/Engine2D"
+    ],
+    "embeddings_cache": "./cache/embeddings.npz"
+  }
+} 

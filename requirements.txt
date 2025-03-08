@@ -1,0 +1,9 @@
+transformers
+torch
+fastapi
+uvicorn
+numpy
+scikit-learn
+websockets
+openai>=1.0.0
+python-dotenv 
