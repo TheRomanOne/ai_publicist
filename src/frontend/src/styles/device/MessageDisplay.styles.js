@@ -10,7 +10,8 @@ export const userColor = {
 };
 
 export const systemColor = {
-  bg: '#a2bd8c',           // Green for assistant messages
+  // bg: '#a2bd8c',           // Green for assistant messages
+  bg: '#869e72',           // Green for assistant messages
   accent: '#689F38',       // Darker green accent
   text: '#FFFFFF',         // White text
   shadow: 'rgba(124, 179, 66, 0.3)'
@@ -79,7 +80,6 @@ export const Message = styled.div`
   &:hover {
     filter: brightness(1.05);
     box-shadow: 0 5px 15px ${props => props.isUser ? userColor.shadow : systemColor.shadow};
-    animation: ${subtlePulse} 1.5s ease infinite;
   }
 `;
 

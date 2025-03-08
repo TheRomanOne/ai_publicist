@@ -1,4 +1,3 @@
-import json
 import time
 import sys
 import traceback
@@ -8,6 +7,7 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from uuid import uuid4
+from resume import resume
 
 # Error messages
 ERROR_MESSAGES = {
@@ -47,7 +47,7 @@ class ApiHandler:
         # Track active sessions and their pending tasks
         self.sessions: Dict[str, Dict[str, Any]] = {}
         self.pending_tasks: Dict[str, asyncio.Task] = {}
-    
+        self.resume = resume
     async def handle_chat_request(self, request: ChatRequest) -> ChatResponse:
         """Process a chat request and return a response"""
         # Generate or use existing session ID
@@ -79,7 +79,7 @@ class ApiHandler:
                 response = await asyncio.wait_for(
                     asyncio.get_event_loop().run_in_executor(
                         None, 
-                        lambda: self.chat_model.generate_response(message, context)
+                        lambda: self.chat_model.generate_response(message, context, self.resume)
                     ),
                     timeout=60
                 )
@@ -104,8 +104,6 @@ class ApiHandler:
                 log_error(f"Model returned error: {content[:100]}")
                 content = ERROR_MESSAGES["general"]
             
-            # Remove the <br> conversion from backend
-            # content = content.replace('\n', '<br>')
             
             # Return formatted response
             elapsed = time.time() - start_time

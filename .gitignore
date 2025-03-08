@@ -16,5 +16,4 @@ src/frontend/node_modules/
 
 # Logs and system files
 *.log
-.DS_Store
-Thumbs.db
+src/backend/resume.py   

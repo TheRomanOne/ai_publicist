@@ -3,7 +3,7 @@ import { keyframes } from '@emotion/react';
 
 // Physical TV-like device frame
 export const Frame = styled.div`
-  width: 850px;
+  width: 1000px;
   height: 750px;
   background: linear-gradient(to bottom, #D97E00, #CC6600, #B35900);
   border-radius: 25px;

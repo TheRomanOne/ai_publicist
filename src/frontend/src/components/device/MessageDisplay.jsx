@@ -6,6 +6,8 @@ import {
   TypingIndicator
 } from '../../styles/device/MessageDisplay.styles';
 import { ERROR_MESSAGES } from '../../utils/constants';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 /**
  * Component to display chat messages with styling
@@ -59,10 +61,79 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
     });
   }
   
-  // Create a helper function at the top of your file
+  // Replace the formatMessage function with this enhanced version
   const formatMessage = (content) => {
     if (!content) return '';
-    return content.replace(/\n/g, "<br>");
+    
+    // Check if the content contains code blocks
+    if (content.includes('```')) {
+      // Parse and render code blocks with syntax highlighting
+      const segments = [];
+      let lastIndex = 0;
+      const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+      
+      let match;
+      while ((match = codeBlockRegex.exec(content)) !== null) {
+        // Add text before the code block
+        if (match.index > lastIndex) {
+          const textSegment = content.substring(lastIndex, match.index);
+          const formattedText = textSegment
+            .replace(/\n/g, "<br>")
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+          
+          segments.push(
+            <span 
+              key={`text-${lastIndex}`} 
+              dangerouslySetInnerHTML={{ __html: formattedText }}
+            />
+          );
+        }
+        
+        // Add the code block with syntax highlighting
+        const language = match[1] || 'text';
+        const code = match[2];
+        
+        segments.push(
+          <div key={`code-${match.index}`} style={{ margin: '10px 0' }}>
+            <SyntaxHighlighter
+              language={language}
+              style={atomDark}
+              customStyle={{
+                borderRadius: '6px',
+                fontSize: '1rem',
+                margin: '0'
+              }}
+            >
+              {code}
+            </SyntaxHighlighter>
+          </div>
+        );
+        
+        lastIndex = match.index + match[0].length;
+      }
+      
+      // Add any remaining text after the last code block
+      if (lastIndex < content.length) {
+        const textSegment = content.substring(lastIndex);
+        const formattedText = textSegment
+          .replace(/\n/g, "<br>")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        
+        segments.push(
+          <span 
+            key={`text-${lastIndex}`} 
+            dangerouslySetInnerHTML={{ __html: formattedText }}
+          />
+        );
+      }
+      
+      return segments;
+    } else {
+      // No code blocks, just format text with bold and line breaks
+      let c = content.replace(/\n/g, "<br>");
+      c = c.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      return <span dangerouslySetInnerHTML={{ __html: c }} />;
+    }
   };
   
   return (
@@ -79,10 +150,9 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
           
           return (
             <MessageContainer key={index} isUser={msg.type === 'user'} className="hover-container">
-              <Message 
-                isUser={msg.type === 'user'} 
-                dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-              />
+              <Message isUser={msg.type === 'user'}>
+                {formatMessage(msg.content)}
+              </Message>
             </MessageContainer>
           );
         })
