@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { TextField, Button } from '@mui/material';
 import { 
   InputContainer,
@@ -26,6 +26,22 @@ const InputArea = ({
   isWaitingForResponse,
   isReconnecting 
 }) => {
+  // Create a ref for the input field
+  const inputRef = useRef(null);
+  
+  // Determine if input should be disabled
+  const isDisabled = !isConnected || isWaitingForResponse || isReconnecting;
+  
+  // Focus the input field when it becomes enabled
+  useEffect(() => {
+    if (!isDisabled && inputRef.current) {
+      // Small delay to ensure the DOM is ready
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 100);
+    }
+  }, [isDisabled]);
+  
   // Determine placeholder text based on connection status
   let placeholderText = STATUS_MESSAGES.READY;
   
@@ -37,6 +53,14 @@ const InputArea = ({
     placeholderText = STATUS_MESSAGES.DISCONNECTED;
   }
   
+  // Handle key press events - send message on Enter
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+  
   return (
     <InputContainer>
       <InputDecorations />
@@ -46,9 +70,11 @@ const InputArea = ({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder={placeholderText}
-        disabled={!isConnected || isWaitingForResponse || isReconnecting}
+        disabled={isDisabled}
         variant="outlined"
         sx={textFieldStyles}
+        onKeyDown={handleKeyPress}
+        inputRef={inputRef}
       />
       
       <Button 

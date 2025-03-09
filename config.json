@@ -7,7 +7,7 @@
       "model": "chatgpt-4o-latest"
     },
     "chunk_size": 1500,
-    "max_context_chunks": 3
+    "max_context_chunks": 5
   },
   "frontend": {
     "host": "localhost",
@@ -15,7 +15,9 @@
   },
   "rag": {
     "code_directories": [
-      "/home/roman/Desktop/ML/pipeline"
+      "/home/roman/Desktop/ML/pipeline",
+      "/home/roman/Desktop/Tob the bot",
+      "/home/roman/Desktop/genetic_path_finder"
     ],
     "embeddings_cache": "./cache/embeddings.npz"
   }

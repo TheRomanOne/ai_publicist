@@ -127,16 +127,14 @@ function App() {
   
   return (
     <ThemeProvider theme={theme}>
-      <div className="App">
-        <div className="grain"></div>
-        <RetroDevice 
-          messages={messages}
-          onSendMessage={sendMessage}
-          isConnected={isConnected}
-          isWaitingForResponse={isWaitingForResponse}
-          isReconnecting={isReconnecting}
-        />
-      </div>
+      <RetroDevice 
+        messages={messages}
+        onSendMessage={sendMessage}
+        isConnected={isConnected}
+        isWaitingForResponse={isWaitingForResponse}
+        isReconnecting={isReconnecting}
+        className={"App"}
+      />
     </ThemeProvider>
   );
 }

@@ -60,10 +60,7 @@ class RAGSystem:
             # Skip empty or very small files
             if len(content) < 50:
                 return []
-            
-            # Add file path as metadata
-            content = f"FILE: {file_path}\n\n{content}"
-            
+                        
             # Break content into chunks
             chunks = []
             current_chunk = ""
@@ -78,6 +75,7 @@ class RAGSystem:
             
             # Add the last chunk if it's not empty
             if current_chunk:
+                current_chunk = f"CHUNK FROM FILE: {file_path}\n\n{current_chunk}"
                 chunks.append(current_chunk)
             
             return chunks

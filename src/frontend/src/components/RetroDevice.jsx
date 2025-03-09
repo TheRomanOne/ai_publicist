@@ -29,7 +29,6 @@ const RetroDevice = ({
     }
   };
 
-  
   return (
     <DeviceContainer>
       <DeviceFrame isConnected={isConnected} isReconnecting={isReconnecting}>
@@ -45,6 +44,7 @@ const RetroDevice = ({
           handleSubmit={handleSubmit}
           isWaitingForResponse={isWaitingForResponse}
           isReconnecting={isReconnecting}
+          // onKeyDown={handleKeyDown}
         />
       </DeviceFrame>
     </DeviceContainer>

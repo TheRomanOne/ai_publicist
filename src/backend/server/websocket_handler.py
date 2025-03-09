@@ -48,79 +48,71 @@ class ApiHandler:
         self.sessions: Dict[str, Dict[str, Any]] = {}
         self.pending_tasks: Dict[str, asyncio.Task] = {}
         self.resume = resume
+    
     async def handle_chat_request(self, request: ChatRequest) -> ChatResponse:
         """Process a chat request and return a response"""
         # Generate or use existing session ID
         session_id = request.session_id or str(uuid4())
         log_message(f"Received request with session_id: {session_id}")
         
-        try:
-            # Store session timestamp
+        # Initialize session data if it doesn't exist
+        if session_id not in self.sessions:
             self.sessions[session_id] = {
                 "last_active": datetime.now(),
-                "message_count": self.sessions.get(session_id, {}).get("message_count", 0) + 1
+                "message_count": 0,
+                "chat_history": ""  # Initialize empty chat history
             }
-            
-            # Get the user message
-            message = request.message
-            log_message(f"Processing message for session {session_id}: {message[:30]}{'...' if len(message) > 30 else ''}")
-            
+        
+        # Update session data
+        self.sessions[session_id]["last_active"] = datetime.now()
+        self.sessions[session_id]["message_count"] += 1
+        
+        start_time = time.time()
+        
+        try:
             # Get relevant context from RAG system
-            start_time = time.time()
-            context = []
-            try:
-                context = self.rag_system.get_relevant_context(message, top_k=3)
-                log_message(f"Retrieved {len(context)} context chunks for query")
-            except Exception as e:
-                log_error(f"Error getting context: {e}", exc_info=e)
+            context = self.rag_system.get_relevant_context(request.message, top_k=3)
+            log_message(f"Retrieved {len(context)} context chunks for query")
             
-            # Generate response using the chat model
-            try:
-                response = await asyncio.wait_for(
-                    asyncio.get_event_loop().run_in_executor(
-                        None, 
-                        lambda: self.chat_model.generate_response(message, context, self.resume)
-                    ),
-                    timeout=120
-                )
-            except asyncio.TimeoutError:
-                log_error(f"Response generation timed out for session {session_id}")
-                return ChatResponse(
-                    content=ERROR_MESSAGES["timeout"],
-                    session_id=session_id,
-                    request_time=time.time() - start_time
-                )
-            except Exception as e:
-                log_error(f"Error generating response: {e}", exc_info=e)
-                return ChatResponse(
-                    content=ERROR_MESSAGES["general"],
-                    session_id=session_id,
-                    request_time=time.time() - start_time
-                )
+            # Get chat history from session
+            chat_history = self.sessions[session_id].get("chat_history", "")
             
-            # Process the response
-            content = response.strip()
-            if response.startswith("Error:"):
-                log_error(f"Model returned error: {content[:100]}")
-                content = ERROR_MESSAGES["general"]
+            # Generate response
+            response_data = self.chat_model.generate_response(
+                request.message,
+                context,
+                self.resume,
+                chat_history
+            )
             
+            # Extract content and summary
+            content = response_data["content"]
+            summary = response_data["summary"]
             
-            # Return formatted response
-            elapsed = time.time() - start_time
-            log_message(f"Response generated in {elapsed:.2f}s for session {session_id}")
+            # Update chat history with the new summary if it exists
+            if summary:
+                if chat_history:
+                    chat_history += "\n\n"
+                chat_history += f"Q: {request.message}\nA: {summary}"
+                self.sessions[session_id]["chat_history"] = chat_history
+            
+            request_time = time.time() - start_time
+            log_message(f"Request processed in {request_time:.2f} seconds")
             
             return ChatResponse(
                 content=content,
                 session_id=session_id,
-                request_time=elapsed
+                request_time=request_time
             )
-            
+        
         except Exception as e:
-            log_error(f"Unexpected error in request handler: {e}", exc_info=e)
+            log_error(f"Error processing request: {str(e)}", exc_info=e)
+            request_time = time.time() - start_time
+            
             return ChatResponse(
                 content=ERROR_MESSAGES["general"],
                 session_id=session_id,
-                request_time=0.0
+                request_time=request_time
             )
     
     async def cleanup_sessions(self):

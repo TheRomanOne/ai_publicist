@@ -8,26 +8,34 @@ const DEFAULT_CONFIG = {
   endpoints: {
     chat: '/api/chat',
     health: '/api/health'
-  }
+  },
+  timeout: 60000  // Increase timeout to 60 seconds (was likely defaulting to 10-30 seconds)
 };
 
 /**
- * Create a chat client to interact with the API
+ * Create a chat API client
+ * 
  * @param {Object} config - Configuration object
- * @returns {Object} - Chat client methods
+ * @returns {Object} - Chat client interface
  */
-export const createChatClient = (config = DEFAULT_CONFIG) => {
+export const createChatClient = (config = {}) => {
+  // Merge default config with provided config
+  const mergedConfig = { ...DEFAULT_CONFIG, ...config };
+  
   // Store session ID for continuous conversation
   let sessionId = localStorage.getItem('chat_session_id') || null;
   
   /**
-   * Send a chat message to the API
-   * @param {string} message - User message
-   * @returns {Promise<Object>} - API response
+   * Send a message to the chat API
+   * 
+   * @param {string} message - Message to send
+   * @returns {Promise<Object>} - Response from the API
    */
   const sendMessage = async (message) => {
+    const url = `${mergedConfig.apiHost}${mergedConfig.endpoints.chat}`;
+    
     try {
-      const response = await fetch(`${config.apiHost}${config.endpoints.chat}`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,16 +44,16 @@ export const createChatClient = (config = DEFAULT_CONFIG) => {
           message,
           session_id: sessionId
         }),
+        signal: AbortSignal.timeout(mergedConfig.timeout)  // Set explicit timeout
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error (${response.status}): ${errorText}`);
+        throw new Error(`API error: ${response.status}`);
       }
       
       const data = await response.json();
       
-      // Store the session ID for future requests
+      // Store session ID
       if (data.session_id) {
         sessionId = data.session_id;
         localStorage.setItem('chat_session_id', sessionId);
@@ -54,11 +62,7 @@ export const createChatClient = (config = DEFAULT_CONFIG) => {
       return data;
     } catch (error) {
       console.error('Error sending message:', error);
-      return {
-        content: "Error connecting to the chat service. Please try again.",
-        session_id: sessionId,
-        request_time: 0
-      };
+      throw error;
     }
   };
   
@@ -68,7 +72,7 @@ export const createChatClient = (config = DEFAULT_CONFIG) => {
    */
   const checkHealth = async () => {
     try {
-      const response = await fetch(`${config.apiHost}${config.endpoints.health}`);
+      const response = await fetch(`${mergedConfig.apiHost}${mergedConfig.endpoints.health}`);
       if (!response.ok) {
         throw new Error(`Health check failed with status ${response.status}`);
       }
