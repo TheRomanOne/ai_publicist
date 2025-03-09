@@ -40,7 +40,7 @@ class ChatResponse(BaseModel):
     request_time: float
 
 class ApiHandler:
-    def __init__(self, rag_system: Any, chat_model: Any):
+    def __init__(self, rag_system: Any, chat_model: Any, retrieved_chunks: int):
         """Initialize the API handler with RAG system and chat model"""
         self.rag_system = rag_system
         self.chat_model = chat_model
@@ -48,6 +48,7 @@ class ApiHandler:
         self.sessions: Dict[str, Dict[str, Any]] = {}
         self.pending_tasks: Dict[str, asyncio.Task] = {}
         self.resume = resume
+        self.retrieved_chunks = retrieved_chunks
     
     async def handle_chat_request(self, request: ChatRequest) -> ChatResponse:
         """Process a chat request and return a response"""
@@ -71,7 +72,7 @@ class ApiHandler:
         
         try:
             # Get relevant context from RAG system
-            context = self.rag_system.get_relevant_context(request.message, top_k=3)
+            context = self.rag_system.get_relevant_context(request.message, top_k=self.retrieved_chunks)
             log_message(f"Retrieved {len(context)} context chunks for query")
             
             # Get chat history from session
@@ -132,9 +133,9 @@ class ApiHandler:
                 log_message(f"Cleaned up inactive session {session_id}")
 
 # Create a function to add API routes to a FastAPI app
-def setup_api_routes(app: FastAPI, rag_system: Any, chat_model: Any):
+def setup_api_routes(app: FastAPI, rag_system: Any, chat_model: Any, retrieved_chunks: int):
     """Set up API routes for the chat application"""
-    api_handler = ApiHandler(rag_system, chat_model)
+    api_handler = ApiHandler(rag_system, chat_model, retrieved_chunks)
     
     @app.post("/api/chat", response_model=ChatResponse)
     async def chat_endpoint(request: ChatRequest):

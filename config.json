@@ -4,10 +4,15 @@
     "port": 5000,
     "model_type": "chatgpt",
     "openai": {
-      "model": "chatgpt-4o-latest"
+      "model": "gpt-3.5-turbo"
     },
     "chunk_size": 1500,
-    "max_context_chunks": 5
+    "max_context_chunks": 10,
+    "chunking": {
+      "min_lines": 30,
+      "preferred_lines": 50,
+      "overlap_percentage": 5
+    }
   },
   "frontend": {
     "host": "localhost",

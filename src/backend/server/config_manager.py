@@ -20,16 +20,19 @@ class ConfigManager:
     def _process_paths(self) -> None:
         """Convert relative paths to absolute paths."""
         for i, dir_path in enumerate(self.config["rag"]["code_directories"]):
-            self.config["rag"]["code_directories"][i] = os.path.join(
+            # Only prepend project root if the path is not already absolute
+            if not os.path.isabs(dir_path):
+                self.config["rag"]["code_directories"][i] = os.path.join(
+                    self.project_root, 
+                    dir_path.lstrip("./")
+                )
+        
+        # Only prepend project root if the embeddings path is not already absolute
+        if not os.path.isabs(self.config["rag"]["embeddings_cache"]):
+            self.config["rag"]["embeddings_cache"] = os.path.join(
                 self.project_root, 
-                dir_path.lstrip("./")
+                self.config["rag"]["embeddings_cache"].lstrip("./")
             )
-        
-        self.config["rag"]["embeddings_cache"] = os.path.join(
-            self.project_root, 
-            self.config["rag"]["embeddings_cache"].lstrip("./")
-        )
-        
     
     def _process_env_vars(self) -> None:
         """Process environment variables."""

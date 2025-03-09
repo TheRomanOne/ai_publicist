@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from server.port_manager import kill_processes_by_port
 from server.config_manager import ConfigManager
 from server.websocket_handler import setup_api_routes
-from rag_system import RAGSystem
+from rag_system.rag_system import RAGSystem
 from chat_model_chatgpt import ChatModelChatGPT
 
 # Clear screen and load environment variables
@@ -39,10 +39,14 @@ app.add_middleware(
 )
 
 # Initialize systems
+chunking_config = config["backend"].get("chunking", {})
 rag_system = RAGSystem(
     code_directories=config["rag"]["code_directories"],
     embeddings_cache=config["rag"]["embeddings_cache"],
-    chunk_size=config["backend"]["chunk_size"]
+    chunk_size=config["backend"]["chunk_size"],  
+    min_lines=chunking_config.get("min_lines", 50),
+    preferred_lines=chunking_config.get("preferred_lines", 100),
+    overlap_percentage=chunking_config.get("overlap_percentage", 5)
 )
 
 # Use ChatGPT for the chat model
@@ -51,8 +55,11 @@ chat_model = ChatModelChatGPT(
     model=config["backend"]["openai"]["model"]
 )
 
+# Extract max_context_chunks from config
+retrieved_chunks = config["backend"]["max_context_chunks"]
+
 # Set up API routes
-api_handler = setup_api_routes(app, rag_system, chat_model)
+api_handler = setup_api_routes(app, rag_system, chat_model, retrieved_chunks)
 
 def cleanup_on_exit():
     """Cleanup function to run when the server is shutting down."""
