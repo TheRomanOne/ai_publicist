@@ -1,15 +1,10 @@
-import os
-import sys
-import json
-import argparse
-import logging
-import time
-import random
+import os, sys, json, argparse, logging, time, random
 from tqdm import tqdm
 from rag_system.rag_system import RAGSystem
 from server.config_manager import ConfigManager
 from colorama import init, Fore, Style
 
+os.system("clear")
 # Initialize colorama for colored terminal output
 init()
 

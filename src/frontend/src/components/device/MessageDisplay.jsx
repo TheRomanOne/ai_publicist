@@ -3,7 +3,9 @@ import {
   ChatArea,
   MessageContainer,
   Message, 
-  TypingIndicator
+  TypingIndicator,
+  CodeBlockContainer,
+  ExpandButton
 } from '../../styles/device/MessageDisplay.styles';
 import { ERROR_MESSAGES } from '../../utils/constants';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -19,6 +21,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
  */
 const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isReconnecting }) => {
   const [errorMessage, setErrorMessage] = useState(null);
+  const [expandedBlocks, setExpandedBlocks] = useState({});
   const chatAreaRef = useRef(null);
   
   // Auto-scroll to bottom when messages change
@@ -41,6 +44,32 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
     }
   }, [connectionStatus]);
   
+  // Toggle code block expansion
+  const toggleCodeBlock = (blockId) => {
+    setExpandedBlocks(prev => ({
+      ...prev,
+      [blockId]: !prev[blockId]
+    }));
+    
+    // Small delay to ensure smooth scroll after animation
+    setTimeout(() => {
+      if (chatAreaRef.current) {
+        const element = document.getElementById(`code-block-${blockId}`);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const isPartiallyVisible = 
+            rect.top < 0 && 
+            rect.bottom > 0 && 
+            rect.bottom < chatAreaRef.current.clientHeight;
+          
+          if (isPartiallyVisible) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      }
+    }, 50);
+  };
+  
   // Create display messages (copies existing messages, adds waiting indicator)
   const displayMessages = [...messages];
   
@@ -62,7 +91,7 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
   }
   
   // Replace the formatMessage function with this enhanced version
-  const formatMessage = (content) => {
+  const formatMessage = (content, messageIndex) => {
     if (!content) return '';
     
     // Check if the content contains code blocks
@@ -73,6 +102,7 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
       const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
       
       let match;
+      let blockCount = 0;
       while ((match = codeBlockRegex.exec(content)) !== null) {
         // Add text before the code block
         if (match.index > lastIndex) {
@@ -92,23 +122,46 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
         // Add the code block with syntax highlighting
         const language = match[1] || 'text';
         const code = match[2];
+        const codeLines = code.split('\n');
+        const blockId = `${messageIndex}-${blockCount}`;
+        const isExpanded = expandedBlocks[blockId] || false;
+        const isTooLong = codeLines.length > 10;
         
         segments.push(
-          <div key={`code-${match.index}`} style={{ margin: '10px 0' }}>
+          <CodeBlockContainer 
+            key={`code-${match.index}`} 
+            id={`code-block-${blockId}`}
+            expanded={isExpanded}
+          >
             <SyntaxHighlighter
               language={language}
               style={atomDark}
               customStyle={{
                 borderRadius: '6px',
                 fontSize: '1rem',
-                margin: '0'
+                margin: '0',
+                maxHeight: isExpanded ? 'none' : (isTooLong ? '200px' : 'none'),
+                transition: 'max-height 0.3s ease-in-out'
               }}
+              showLineNumbers={true}
+              wrapLines={true}
             >
               {code}
             </SyntaxHighlighter>
-          </div>
+            
+            {isTooLong && (
+              <ExpandButton 
+                onClick={() => toggleCodeBlock(blockId)}
+                role="button"
+                tabIndex={0}
+              >
+                {isExpanded ? 'Show less' : 'Show more'}
+              </ExpandButton>
+            )}
+          </CodeBlockContainer>
         );
         
+        blockCount++;
         lastIndex = match.index + match[0].length;
       }
       
@@ -151,7 +204,7 @@ const MessageDisplay = ({ messages, isWaitingForResponse, connectionStatus, isRe
           return (
             <MessageContainer key={index} isUser={msg.type === 'user'} className="hover-container">
               <Message isUser={msg.type === 'user'}>
-                {formatMessage(msg.content)}
+                {formatMessage(msg.content, index)}
               </Message>
             </MessageContainer>
           );

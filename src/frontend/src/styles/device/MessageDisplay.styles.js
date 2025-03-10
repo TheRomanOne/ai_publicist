@@ -46,7 +46,7 @@ export const ChatArea = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 16px;
+  padding: 0px 16px;
   overflow-y: auto;
   scroll-behavior: smooth;
   background-color: rgba(255, 237, 144, 0.66);
@@ -66,15 +66,15 @@ export const MessageContainer = styled.div`
 export const Message = styled.div`
   position: relative;
   max-width: 80%;
-  padding: 14px 18px;
+  padding: 14px; 18px;
   background-color: ${props => props.isUser ? userColor.bg : systemColor.bg};
   color: ${props => props.isUser ? userColor.text : systemColor.text};
   border-radius: 18px;
   border-bottom-${props => props.isUser ? 'right' : 'left'}-radius: 4px;
   box-shadow: 0 3px 12px ${props => props.isUser ? userColor.shadow : systemColor.shadow};
   overflow-wrap: break-word;
-  font-size: 1.4rem;
-  line-height: 1.5;
+  font-size: 1.3rem;
+  line-height: 1.3;
   transition: all 0.3s ease;
   
   &:hover {
@@ -126,5 +126,135 @@ export const TypingIndicator = styled.div`
     0% { opacity: 0.4; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.3); }
     100% { opacity: 0.4; transform: scale(1); }
+  }
+`;
+
+// Code block container with expand/collapse functionality
+export const CodeBlockContainer = styled.div`
+  position: relative;
+  margin: 12px 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #282c34;
+  
+  /* Refined styling with subtle details */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  
+  /* Smoother height transition */
+  transition: all 0.45s cubic-bezier(0.3, 0, 0.2, 1);
+  max-height: ${props => props.expanded ? '9000px' : '220px'};
+  
+  /* Space for the button */
+  padding-bottom: ${props => !props.expanded ? '40px' : '0'};
+  
+  /* Refined gradient overlay for collapsed state */
+  &:after {
+    content: '';
+    display: ${props => props.expanded ? 'none' : 'block'};
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(
+      to bottom,
+      rgba(40, 44, 52, 0),
+      rgba(40, 44, 52, 0.95) 65%
+    );
+    pointer-events: none;
+  }
+  
+  /* Clean code styling */
+  pre {
+    margin: 0 !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    background-color: transparent !important;
+  }
+  
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+  }
+`;
+
+// Button to expand/collapse code blocks - completely redesigned
+export const ExpandButton = styled.button`
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  
+  /* Pill-shaped button with gradient */
+  background:rgb(23, 51, 1);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  
+  /* Remove default button styling */
+  cursor: pointer;
+  transition: all 0.25s ease;
+  
+  /* Add subtle shadow and border */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  
+  /* Center text and icon */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  
+  /* Hover animation */
+  &:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: linear-gradient(90deg, #5a7fbf, #6e6ed8);
+  }
+  
+  &:active {
+    transform: translateX(-50%) translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Icon styling - using a simple arrow */
+  &:before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: ${props => props.children && props.children.includes('less') ? 'rotate(-135deg)' : 'rotate(45deg)'};
+    margin-right: 2px;
+    position: relative;
+    top: ${props => props.children && props.children.includes('less') ? '1px' : '-1px'};
+    transition: transform 0.2s ease;
+  }
+  
+  /* Clean, simple text */
+  span {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Entrance animation */
+  animation: buttonFadeIn 0.4s ease-out;
+  
+  @keyframes buttonFadeIn {
+    from { 
+      opacity: 0;
+      transform: translateX(-50%) translateY(5px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   }
 `; 

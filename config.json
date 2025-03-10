@@ -1,13 +1,14 @@
 {
+  "user_name": "Roman",
   "backend": {
     "host": "localhost",
     "port": 5000,
     "model_type": "chatgpt",
     "openai": {
-      "model": "gpt-3.5-turbo"
+      "model": "chatgpt-4o-latest"
     },
     "chunk_size": 1500,
-    "max_context_chunks": 10,
+    "max_context_chunks": 3,
     "chunking": {
       "min_lines": 30,
       "preferred_lines": 50,
@@ -22,7 +23,9 @@
     "code_directories": [
       "/home/roman/Desktop/ML/pipeline",
       "/home/roman/Desktop/Tob the bot",
-      "/home/roman/Desktop/genetic_path_finder"
+      "/home/roman/Desktop/genetic_path_finder",
+      "/home/roman/Desktop/ml_gym",
+      "/home/roman/Desktop/game_of_life"
     ],
     "embeddings_cache": "./cache/embeddings.npz"
   }

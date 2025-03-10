@@ -20,11 +20,6 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 config_manager = ConfigManager(PROJECT_ROOT)
 config = config_manager.get_config()
 
-# Clean up ports
-for port in [config["backend"]["port"], config["frontend"]["port"]]:
-    print(f"\nChecking port {port}...")
-    kill_processes_by_port(port)
-
 # Initialize FastAPI app
 app = FastAPI(title="RAG Chat API", 
               description="REST API for chat with retrieval-augmented generation")
@@ -44,15 +39,16 @@ rag_system = RAGSystem(
     code_directories=config["rag"]["code_directories"],
     embeddings_cache=config["rag"]["embeddings_cache"],
     chunk_size=config["backend"]["chunk_size"],  
-    min_lines=chunking_config.get("min_lines", 50),
-    preferred_lines=chunking_config.get("preferred_lines", 100),
-    overlap_percentage=chunking_config.get("overlap_percentage", 5)
+    min_lines=chunking_config.get("min_lines"),
+    preferred_lines=chunking_config.get("preferred_lines"),
+    overlap_percentage=chunking_config.get("overlap_percentage")
 )
 
 # Use ChatGPT for the chat model
 chat_model = ChatModelChatGPT(
     api_key=config["backend"]["openai"]["api_key"],
-    model=config["backend"]["openai"]["model"]
+    model=config["backend"]["openai"]["model"],
+    user_name=config["user_name"]
 )
 
 # Extract max_context_chunks from config
@@ -61,17 +57,15 @@ retrieved_chunks = config["backend"]["max_context_chunks"]
 # Set up API routes
 api_handler = setup_api_routes(app, rag_system, chat_model, retrieved_chunks)
 
-def cleanup_on_exit():
+def cleanup():
     """Cleanup function to run when the server is shutting down."""
-    print("\nCleaning up before exit...")
-    for port in [config["backend"]["port"], config["frontend"]["port"]]:
+    print("\nCleaning up ports")
+    for port in [config["backend"]["port"]]:#, config["frontend"]["port"]]:
         kill_processes_by_port(port)
-    exit(0)
 
 if __name__ == "__main__":
     # Register cleanup function
-    signal.signal(signal.SIGINT, cleanup_on_exit)
-    signal.signal(signal.SIGTERM, cleanup_on_exit)
+    cleanup()
     
     import uvicorn
     uvicorn.run(
