@@ -38,7 +38,8 @@ function App() {
           // Only add welcome message if there are no messages yet
           // This prevents adding it again if app rerenders
           if (messages.length === 0) {
-            const welcomeMessage = getRandomWelcomeMessage();
+            let welcomeMessage = getRandomWelcomeMessage();
+            welcomeMessage = welcomeMessage.replace('<USER_NAME>', 'Roman');
             setMessages([{
               type: 'assistant',
               content: welcomeMessage

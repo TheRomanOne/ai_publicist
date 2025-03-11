@@ -51,7 +51,8 @@ class ChatModelChatGPT:
             
             # Remove summary from the response text
             # cleaned_content = re.sub(r'<summary>.*?</summary>', '', raw_content, flags=re.DOTALL | re.IGNORECASE).strip()
-            cleaned_content = raw_content
+            # cleaned_content = raw_content
+            cleaned_content = raw_content.replace("\n-", "\n\n-").replace("\n\n\n-", "\n\n-")
             
             # Log the response and summary
             log_message(f"ChatGPT generated response:\n{cleaned_content}")

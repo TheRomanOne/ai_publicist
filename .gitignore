@@ -16,4 +16,4 @@ src/frontend/node_modules/
 
 # Logs and system files
 *.log
-src/backend/resume.py   
+src/backend/resume.txt   

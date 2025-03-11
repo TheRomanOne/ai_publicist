@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from uuid import uuid4
-from resume import resume
 
 # Error messages
 ERROR_MESSAGES = {
@@ -39,16 +38,23 @@ class ChatResponse(BaseModel):
     session_id: str
     request_time: float
 
+class UserNameRequest(BaseModel):
+    user_name: str
+
 class ApiHandler:
-    def __init__(self, rag_system: Any, chat_model: Any, retrieved_chunks: int):
+    def __init__(self, rag_system: Any, chat_model: Any, retrieved_chunks: int, resume_path: str):
         """Initialize the API handler with RAG system and chat model"""
         self.rag_system = rag_system
         self.chat_model = chat_model
+        self.retrieved_chunks = retrieved_chunks
+        
+        # Read resume from text file
+        with open(resume_path, 'r') as file:
+            self.resume = file.read()
+        
         # Track active sessions and their pending tasks
         self.sessions: Dict[str, Dict[str, Any]] = {}
         self.pending_tasks: Dict[str, asyncio.Task] = {}
-        self.resume = resume
-        self.retrieved_chunks = retrieved_chunks
     
     async def handle_chat_request(self, request: ChatRequest) -> ChatResponse:
         """Process a chat request and return a response"""
@@ -133,13 +139,17 @@ class ApiHandler:
                 log_message(f"Cleaned up inactive session {session_id}")
 
 # Create a function to add API routes to a FastAPI app
-def setup_api_routes(app: FastAPI, rag_system: Any, chat_model: Any, retrieved_chunks: int):
+def setup_api_routes(app: FastAPI, rag_system: Any, chat_model: Any, retrieved_chunks: int, resume_path: str):
     """Set up API routes for the chat application"""
-    api_handler = ApiHandler(rag_system, chat_model, retrieved_chunks)
+    api_handler = ApiHandler(rag_system, chat_model, retrieved_chunks, resume_path)
     
     @app.post("/api/chat", response_model=ChatResponse)
     async def chat_endpoint(request: ChatRequest):
         return await api_handler.handle_chat_request(request)
+    
+    @app.post("/api/chat/user_name")
+    async def user_name_endpoint(request: UserNameRequest):
+        return await api_handler.handle_user_name_request(request)
     
     @app.get("/api/health")
     async def health_check():

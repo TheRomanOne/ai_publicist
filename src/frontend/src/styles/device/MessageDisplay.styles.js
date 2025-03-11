@@ -73,8 +73,8 @@ export const Message = styled.div`
   border-bottom-${props => props.isUser ? 'right' : 'left'}-radius: 4px;
   box-shadow: 0 3px 12px ${props => props.isUser ? userColor.shadow : systemColor.shadow};
   overflow-wrap: break-word;
-  font-size: 1.3rem;
-  line-height: 1.3;
+  font-size: 1.1rem;
+  line-height: 1.2;
   transition: all 0.3s ease;
   
   &:hover {

@@ -1,11 +1,12 @@
 # AI Publicist
 
-**AI Publicist** is a personal AI-powered representative, designed to showcase your expertise. Instead of speaking directly to recruiters, let your AI Publicist interact on your behalf—highlighting your skills, projects, and experience in a structured, engaging, and technically precise manner.
+**AI Publicist** is an AI-powered representative, designed to showcase your expertise. Instead of speaking directly to recruiters, let your AI Publicist interact on your behalf—highlighting your skills, projects, and experience in a structured, engaging, and technically precise manner.
 
 Powered by a **chatgpt-4o** and a **RAG system**, AI Publicist dynamically references your **resume, project files, and code snippets** to provide informed, contextual responses to inquiries from potential employers, collaborators, or industry peers.
 
 ---
-
+![AI Publicist Interface](img.png)
+---
 ## Features
 
 ### ✨ Intelligent AI Representative
@@ -32,10 +33,13 @@ Powered by a **chatgpt-4o** and a **RAG system**, AI Publicist dynamically refer
 - Supports **customizable prompts and AI behavior tuning** to match your communication style.
 - Can be expanded with additional datasets or integrations for broader functionality.
 
+### 📊 RAG Visualization
+
+- Visualize the RAG system's database with an interactive UI.
+- Provides insights into code chunk statistics and project details.
+- Facilitates understanding of how the RAG system organizes and retrieves information.
+
 ---
-
-
-
 
 ## Getting Started
 
@@ -53,13 +57,19 @@ To get started with AI Publicist, follow these steps:
    pip install -r requirements.txt
    ```
 
-3. **Run the Backend Server**: 
+3. **Create an `.env` File**: 
+   Create a `.env` file in the project root and add your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+4. **Run the Backend Server**: 
    Start the backend.
    ```bash
    python src/backend/app.py
    ```
 
-4. **Run the Frontend**: 
+5. **Run the Frontend**: 
    Navigate to the frontend directory and start the React application.
    ```bash
    cd src/frontend
@@ -67,7 +77,7 @@ To get started with AI Publicist, follow these steps:
    npm start
    ```
 
-5. **Access the Application**: 
+6. **Access the Application**: 
    Open your web browser and navigate to `http://localhost:3000` to start interacting with the AI assistant.
 
 ## Configuration

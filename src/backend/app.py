@@ -55,7 +55,8 @@ chat_model = ChatModelChatGPT(
 retrieved_chunks = config["backend"]["max_context_chunks"]
 
 # Set up API routes
-api_handler = setup_api_routes(app, rag_system, chat_model, retrieved_chunks)
+resume_path = os.path.join(PROJECT_ROOT, "src/backend/resume.txt")
+api_handler = setup_api_routes(app, rag_system, chat_model, retrieved_chunks, resume_path)
 
 def cleanup():
     """Cleanup function to run when the server is shutting down."""
